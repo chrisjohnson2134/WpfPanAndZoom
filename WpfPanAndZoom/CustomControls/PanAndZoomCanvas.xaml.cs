@@ -33,7 +33,7 @@ namespace WpfPanAndZoom.CustomControls
         private Color _backgroundColor = Color.FromArgb(0xFF, 0x33, 0x33, 0x33);
         private List<Line> _gridLines = new List<Line>();
 
-
+        private int _newWidgetCounter = 1;
         #endregion
 
         public PanAndZoomCanvas()
@@ -142,14 +142,29 @@ namespace WpfPanAndZoom.CustomControls
 
             if (e.ChangedButton == MouseButton.Left)
             {
-                if (this.Children.Contains((UIElement)e.Source))
+                Point mousePosition = Mouse.GetPosition(this);
+                if (this.Children.Contains((UIElement)e.Source) && e.ClickCount == 1)
                 {
                     _selectedElement = (UIElement)e.Source;
-                    Point mousePosition = Mouse.GetPosition(this);
                     double x = Canvas.GetLeft(_selectedElement);
                     double y = Canvas.GetTop(_selectedElement);
                     Point elementPosition = new Point(x, y);
                     _draggingDelta = elementPosition - mousePosition;
+                }
+                else if (e.ClickCount == 2)
+                {
+                    Matrix scaleMatrix = _transform.Matrix;
+                    Widget w = new Widget
+                    {
+                        Width = 200,
+                        Height = 150
+                    };
+                    w.Header.Text = $"New Widget {_newWidgetCounter++}";
+                    w.HeaderRectangle.Fill = Brushes.Red;
+                    Canvas.SetTop(w, mousePosition.Y - _transform.Matrix.OffsetY);
+                    Canvas.SetLeft(w, mousePosition.X - _transform.Matrix.OffsetX);
+                    w.RenderTransform = _transform;
+                    Children.Add(w);
                 }
                 _dragging = true;
             }
